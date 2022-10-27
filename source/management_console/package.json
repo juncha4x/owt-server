@@ -11,7 +11,7 @@
     "pnotify": "3.0.0",
     "react": "^16.8.4",
     "react-dom": "^16.8.4",
-    "react-table": "6.9.0",
+    "react-table": "6.11.5",
     "toml": "3.0.0",
     "uuid": "^8.3.2"
   },
