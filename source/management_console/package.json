@@ -8,7 +8,7 @@
     "http-proxy": "1.18.1",
     "jquery": "^3.0.0",
     "lodash": "^4.17.11",
-    "pnotify": "3.0.0",
+    "pnotify": "3.2.1",
     "react": "^16.8.4",
     "react-dom": "^16.8.4",
     "react-table": "6.9.0",
