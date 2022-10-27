@@ -7,7 +7,7 @@ ARG dldt=dldt-binaries
 ARG gst=gst-internal
 ARG OpenVINO_VERSION
 
-FROM ubuntu:18.04 AS base
+FROM ubuntu:focal-20221019 AS base
 WORKDIR /home
 
 # COMMON BUILD TOOLS
@@ -537,7 +537,7 @@ FROM ${dldt} AS dldt-build
 
 FROM ${gst} AS gst-build
 
-FROM ubuntu:18.04 AS owt-build
+FROM ubuntu:focal-20221019 AS owt-build
 LABEL Description="This is the base image for GSTREAMER & DLDT Ubuntu 18.04 LTS"
 LABEL Vendor="Intel Corporation"
 WORKDIR /root
@@ -578,7 +578,7 @@ RUN cd ${SERVER_PATH} && ./scripts/build.js -t mcu -r -c && \
 
 
 
-FROM ubuntu:18.04 AS owt-run
+FROM ubuntu:focal-20221019 AS owt-run
 LABEL Description="This is the base image for GSTREAMER & DLDT Ubuntu 18.04 LTS"
 LABEL Vendor="Intel Corporation"
 WORKDIR /home
