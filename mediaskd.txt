@@ -1,0 +1,323 @@
+安装 ubunut 20.04；  下载 https://github.com/Intel-Media-SDK/MediaSDK/releases/tag/intel-mediasdk-22.5.4 的 releases
+ 描述  
+    Intel MediaSDK 2022Q3 Release - 22.5.4 Latest
+
+    This release of Intel® Media SDK is part of open source release of media stack. Component revisions included into package:
+
+    Media SDK and Samples: https://github.com/Intel-Media-SDK/MediaSDK/releases/tag/intel-mediasdk-22.5.4
+    Driver: https://github.com/intel/media-driver/releases/tag/intel-media-22.5.4
+    Gmmlib: https://github.com/intel/gmmlib/releases/tag/intel-gmmlib-22.2.0
+    libva: https://github.com/intel/libva/releases/tag/2.16.0
+    libva-utils: https://github.com/intel/libva-utils/releases/tag/2.16.0
+    What’s New in Media SDK 22.5.4
+    Decode
+
+    Enable HEVC decode HDR SEI parameters parsing.
+    Software requirements
+
+    Libdrm 2.4.84 or later
+    Kernel 4.14 or later (5.4 recommended, consult kernel support matrix wiki page for details)
+    Known issues
+
+    Kernel 5.0 have known issue with endurance on Skylake see https://bugs.freedesktop.org/show_bug.cgi?id=110285 for details.
+    Windows support
+    Samples and dispatcher API 1.35 supported by Windows Intel(r) graphics driver since 27.20.100.8935 version.
+
+    Limited support on certain platforms:
+    MPEG-2 encode is not supported on Apollo Lake
+    H.264 Flexible Encode Infrastructure only supported on Broadwell and Skylake
+    Multi Frame Encode (MFE), HEVC Flexible Encode Infrastructure only supported on Skylake
+    VP9 decoder is supported starting from Kabylake platform
+    VP9 encoder is supported starting from Icelake platform
+    SW fallback is unsupported for all components but MJPEG
+    Keem Bay requires a VPU runtime library
+    The following features are supported by Keem Bay runtime and are not supported by Gen graphics runtime:
+    mfxExtInsertHeaders
+    mfxExtEncoderIPCMArea
+    
+    
+    
+    ####    export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+    ####    export LIBVA_DRIVER_NAME=iHD
+    ####    export LIBVA_DRIVERS_PATH=/usr/local/lib/dri
+    
+    
+1.  添加http 代理
+webrtc@webrtc-TigerLake:~$ cat /etc/environment
+PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
+http_proxy=http://child-prc.intel.com:913/
+https_proxy=http://child-prc.intel.com:913/
+no_proxy=127.0.0.1,10.0.0.0/8,172.17.0.1,localhost,intel.com,.intel.com
+NO_PROXY=127.0.0.1,10.0.0.0/8,172.17.0.1,localhost,intel.com,.intel.com
+HTTP_PROXY=http://child-prc.intel.com:913/
+HTTPS_PROXY=http://child-prc.intel.com:913/
+
+2.  添加 apt 代理
+webrtc@webrtc-TigerLake:~$ cat /etc/apt/apt.conf.d/proxy.conf 
+Acquire {
+  HTTP::proxy  "http://child-prc.intel.com:913";
+  HTTPS::proxy "http://child-prc.intel.com:913";
+}
+
+3. 安装 工具
+reboot ；
+sudo apt update  &&  sudo apt upgrade  && apt install  -y vim net-tools openssh-server git 
+
+4. 安装 media sdk  （https://github.com/Intel-Media-SDK/MediaSDK/releases/tag/intel-mediasdk-22.5.4 ）
+   
+   mkdir intel-mediasdk-22.5.4 && cd intel-mediasdk-22.5.4
+   # 下载  Media SDK and Samples 
+    git clone https://github.com/Intel-Media-SDK/MediaSDK -b intel-mediasdk-22.5.4 && cd  MediaSDK   &&  git log  -n1 --oneline  && cd - 
+   # 下载 Driver: 
+    git clone  https://github.com/intel/media-driver -b intel-media-22.5.4 && cd media-driver &&  git log  -n1 --oneline  && cd - 
+   # 下载  Gmmlib: 
+    git clone  https://github.com/intel/gmmlib -b intel-gmmlib-22.2.0 && cd gmmlib &&  git log  -n1 --oneline  && cd - 
+   # 下载  libva: 
+    git clone  https://github.com/intel/libva -b 2.16.0 && cd libva &&  git log  -n1 --oneline  && cd - 
+   # 下载  libva-utils: 
+    git clone  https://github.com/intel/libva-utils -b 2.16.0 && cd libva-utils &&  git log  -n1 --oneline  && cd - 
+    
+
+5. 安装编译工具
+    sudo apt install -y  gcc g++ cmake 
+    查看gcc g++；
+    which gcc  && ls -l/usr/bin/gcc 
+    # 得知  /usr/bin/gcc -> gcc-9  安装 multilib
+    sudo apt install -y  gcc-9-multilib g++-9-multilib 
+    
+    # 查看 cmake 的版本是否符合要
+    cmake --version
+    
+    #确认内核 和 Libdrm
+    # Libdrm 2.4.84 or later
+    # Kernel 4.14 or later (5.4 recommended, consult kernel support matrix wiki page for details)
+    sudo apt install libdrm-dev ### Preparing to unpack .../libdrm-dev_2.4.107-8ubuntu1~20.04.2_amd64.deb ... (>2.4.8 有效)
+    uname -ar  ###  5.15.0-56-generic  > （ 4.14 有效）
+    
+    
+    其他
+    sudo apt-get install -y make            # make编译源码很多地方需要
+    sudo apt-get install -y dh-autoreconf   # autogen编译源码时需要
+    sudo apt-get install pkg-config         # 编译libva时需要
+    sudo apt-get install -y libncurses5-dev libpthread-stubs0-dev libpciaccess-dev libxvmc-dev xutils-dev libsdl2-dev libxcb-shm0-dev
+    
+    
+6. 编译 libva 
+    cd libva && ./autogen.sh  && make -j$(nproc) && sudo make install && cd -
+    ## 文件 /usr/local/include/va  ； /usr/local/lib ；  /usr/local/lib/pkgconfig/
+    ## 可以修改 ./autogen.sh --prefix=/opt/intel/libva --libdir=/opt/intel/libva/lib
+7. 编译 libva-utils 
+    export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+    cd libva-utils  && ./autogen.sh  && make -j$(nproc) && sudo make install && cd -
+    ## 文件 /usr/local/bin
+    ## 可以修改 export PKG_CONFIG_PATH=/opt/intel/libva/lib/pkgconfig ； ./autogen.sh --prefix=/opt/intel/libva-utils --libdir=/opt/intel/libva-utils/lib 
+8. 编译 gmmlib 
+    mkdir -p gmmlib/build && cd gmmlib/build && cmake -DCMAKE_BUILD_TYPE=Release -DARCH=64 .. && make -j$(nproc) && sudo make install && cd -
+9. 编译 media-driver
+    mkdir build_media && cd build_media && cmake ../media-driver && make -j$(nproc) && sudo make install && cd -
+    export LIBVA_DRIVER_NAME=iHD
+    export LIBVA_DRIVERS_PATH=/usr/local/lib/dri
+    ## 安装完成后 
+    ## 文件  /usr/local/include/igdgmm ; /usr/local/include/igfxcmrt ; /usr/local/lib/  ; /usr/local/lib/dir
+    ## -- Install configuration: ""
+    ## -- Installing: /usr/local/lib/dri/iHD_drv_video.so
+    ## -- Installing: /usr/local/lib/libigfxcmrt.so.7.2.0
+    ## -- Installing: /usr/local/lib/libigfxcmrt.so.7
+    ## -- Installing: /usr/local/lib/libigfxcmrt.so
+    ## -- Installing: /usr/local/include/igfxcmrt/cm_rt.h
+    ## -- Installing: /usr/local/include/igfxcmrt/cm_rt_g8.h
+    ## -- Installing: /usr/local/include/igfxcmrt/cm_rt_g9.h
+    ## -- Installing: /usr/local/include/igfxcmrt/cm_rt_g10.h
+    ## -- Installing: /usr/local/include/igfxcmrt/cm_rt_g11.h
+    ## -- Installing: /usr/local/include/igfxcmrt/cm_rt_g12_tgl.h
+    ## -- Installing: /usr/local/include/igfxcmrt/cm_rt_g12_dg1.h
+    ## -- Installing: /usr/local/include/igfxcmrt/cm_hw_vebox_cmd_g10.h
+    ## -- Installing: /usr/local/include/igfxcmrt/cm_rt_def_os.h
+    ## -- Installing: /usr/local/include/igfxcmrt/cm_rt_api_os.h
+    ## -- Installing: /usr/local/include/igfxcmrt/cm_rt_extension.h
+    ## -- Installing: /usr/local/lib/pkgconfig/igfxcmrt.pc
+
+10. 编译 MediaSDK
+    mkdir -p MediaSDK/build && cd MediaSDK/build && cmake .. && make && sudo make install && cd -
+    # 通过 file /opt/intel/mediasdk/lib/* 得知 lib 是 64bit ，创建软连接
+    cd /opt/intel/mediasdk/ && sudo ln -s lib/ lib64 && cd  -
+    sudo reboot ;
+    
+    
+11 . 意外按照上面操作发生了一些意外 之后 ，具体是 执行 vainfo 后 （libva-x11.so.2:） cannot open shared object file:
+   ## webrtc@webrtc-TigerLake:/usr/local/lib$
+   ### webrtc@webrtc-TigerLake:/usr/local/lib$ vainfo 
+   ### vainfo: error while loading shared libraries: libva-x11.so.2: cannot open shared object file: No such file or directory
+   ##  之后重新编译  libva 和 libva-utils 解决
+   ### 使用了./autogen.sh --prefix=/opt/intel/libva --libdir=/opt/intel/libva/lib ;  和 autogen.sh 编译了两次 
+   ###      ./autogen.sh --prefix=/opt/intel/libva-utils --libdir=/opt/intel/libva-utils/lib
+   现在执行 vainfo 后 信息正常
+   
+   
+webrtc@webrtc-TigerLake:~$ vainfo 
+Trying display: wayland
+Trying display: x11
+error: can't connect to X server!
+Trying display: drm
+libva info: VA-API version 1.16.0
+libva info: User environment variable requested driver 'iHD'
+libva info: Trying to open /usr/local/lib/dri/iHD_drv_video.so
+libva info: Found init function __vaDriverInit_1_16
+libva info: va_openDriver() returns 0
+vainfo: VA-API version: 1.16 (libva 2.16.0)
+vainfo: Driver version: Intel iHD driver for Intel(R) Gen Graphics - 22.5.4 (e461c0558)
+vainfo: Supported profile and entrypoints
+      VAProfileNone                   : VAEntrypointVideoProc
+      VAProfileNone                   : VAEntrypointStats
+      VAProfileMPEG2Simple            : VAEntrypointVLD
+      VAProfileMPEG2Simple            : VAEntrypointEncSlice
+      VAProfileMPEG2Main              : VAEntrypointVLD
+      VAProfileMPEG2Main              : VAEntrypointEncSlice
+      VAProfileH264Main               : VAEntrypointVLD
+      VAProfileH264Main               : VAEntrypointEncSlice
+      VAProfileH264Main               : VAEntrypointFEI
+      VAProfileH264Main               : VAEntrypointEncSliceLP
+      VAProfileH264High               : VAEntrypointVLD
+      VAProfileH264High               : VAEntrypointEncSlice
+      VAProfileH264High               : VAEntrypointFEI
+      VAProfileH264High               : VAEntrypointEncSliceLP
+      VAProfileVC1Simple              : VAEntrypointVLD
+      VAProfileVC1Main                : VAEntrypointVLD
+      VAProfileVC1Advanced            : VAEntrypointVLD
+      VAProfileJPEGBaseline           : VAEntrypointVLD
+      VAProfileJPEGBaseline           : VAEntrypointEncPicture
+      VAProfileH264ConstrainedBaseline: VAEntrypointVLD
+      VAProfileH264ConstrainedBaseline: VAEntrypointEncSlice
+      VAProfileH264ConstrainedBaseline: VAEntrypointFEI
+      VAProfileH264ConstrainedBaseline: VAEntrypointEncSliceLP
+      VAProfileVP8Version0_3          : VAEntrypointVLD
+      VAProfileHEVCMain               : VAEntrypointVLD
+      VAProfileHEVCMain               : VAEntrypointEncSlice
+      VAProfileHEVCMain               : VAEntrypointFEI
+      VAProfileHEVCMain               : VAEntrypointEncSliceLP
+      VAProfileHEVCMain10             : VAEntrypointVLD
+      VAProfileHEVCMain10             : VAEntrypointEncSlice
+      VAProfileHEVCMain10             : VAEntrypointEncSliceLP
+      VAProfileVP9Profile0            : VAEntrypointVLD
+      VAProfileVP9Profile1            : VAEntrypointVLD
+      VAProfileVP9Profile2            : VAEntrypointVLD
+      VAProfileVP9Profile3            : VAEntrypointVLD
+      VAProfileHEVCMain12             : VAEntrypointVLD
+      VAProfileHEVCMain12             : VAEntrypointEncSlice
+      VAProfileHEVCMain422_10         : VAEntrypointVLD
+      VAProfileHEVCMain422_10         : VAEntrypointEncSlice
+      VAProfileHEVCMain422_12         : VAEntrypointVLD
+      VAProfileHEVCMain422_12         : VAEntrypointEncSlice
+      VAProfileHEVCMain444            : VAEntrypointVLD
+      VAProfileHEVCMain444            : VAEntrypointEncSliceLP
+      VAProfileHEVCMain444_10         : VAEntrypointVLD
+      VAProfileHEVCMain444_10         : VAEntrypointEncSliceLP
+      VAProfileHEVCMain444_12         : VAEntrypointVLD
+      VAProfileHEVCSccMain            : VAEntrypointVLD
+      VAProfileHEVCSccMain            : VAEntrypointEncSliceLP
+      VAProfileHEVCSccMain10          : VAEntrypointVLD
+      VAProfileHEVCSccMain10          : VAEntrypointEncSliceLP
+      VAProfileHEVCSccMain444         : VAEntrypointVLD
+      VAProfileHEVCSccMain444         : VAEntrypointEncSliceLP
+      VAProfileAV1Profile0            : VAEntrypointVLD
+      VAProfileHEVCSccMain444_10      : VAEntrypointVLD
+      VAProfileHEVCSccMain444_10      : VAEntrypointEncSliceLP
+webrtc@webrtc-TigerLake:~$
+
+
+
+12. 编译 open-webrtc-toolkit 的 owt-server 
+    cd code/open-webrtc-toolkit  
+    git clone https://github.com/open-webrtc-toolkit/owt-server.git
+    ./scripts/installDepsUnattended.sh
+    
+// ########################################### python 报错 ####################################
+
+            ________ running 'download_from_google_storage --directory --recursive --num_threads=10 --no_auth --quiet --bucket chromium-webrtc-resources src/resources' in '/home/webrtc/code/open-webrtc-toolkit/owt-server/third_party/webrtc-m88'
+        NOTICE: You have PROXY values set in your environment, but gsutilin depot_tools does not (yet) obey them.
+        Also, --no_auth prevents the normal BOTO_CONFIG environmentvariable from being used.
+        To use a proxy in this situation, please supply those settingsin a .boto file pointed to by the NO_AUTH_BOTO_CONFIG environmentvariable.
+        Hook 'download_from_google_storage --directory --recursive --num_threads=10 --no_auth --quiet --bucket chromium-webrtc-resources src/resources' took 305.91 secs
+        Running hooks: 100% (22/22), done.
+        ERROR at //build/config/python.gni:66:15: Script returned non-zero exit code.
+        _is_python2 = exec_script("//build/util/is_python2.py", [], "json")
+                      ^----------
+        Current dir: /home/webrtc/code/open-webrtc-toolkit/owt-server/third_party/webrtc-m88/src/out/
+        Command: python /home/webrtc/code/open-webrtc-toolkit/owt-server/third_party/webrtc-m88/src/build/util/is_python2.py
+        Returned 127.
+        See //third_party/closure_compiler/compile_js.gni:5:1: whence it was imported.
+        import("//build/config/python.gni")
+        ^---------------------------------
+        See //third_party/protobuf/proto_library.gni:131:3: whence it was imported.
+          import("//third_party/closure_compiler/compile_js.gni")
+          ^-----------------------------------------------------
+        See //BUILD.gn:19:3: whence it was imported.
+          import("//third_party/protobuf/proto_library.gni")
+          ^------------------------------------------------
+        webrtc@webrtc-TigerLake:~/code/open-webrtc-toolkit/owt-server$ 
+
+
+// ###################################################################################################################
+    
+    执行命令按照 python 之后会 
+    sudo apt install -y python  python2.7-dev
+    wget https://bootstrap.pypa.io/pip/2.7/get-pip.py && sudo python2 get-pip.py  ## 安装 pip2  "/usr/local/bin/pip" or "/home/webrtc/.local/bin"
+    
+    
+    
+    执行  scripts/build.js -t all --check
+    //##### 报错  /usr/bin/env: ‘node’: No such file or directory
+    $ source ~/.bashrc  &&  source ~/.profile 
+    $ scripts/build.js -t all --check
+    
+    
+// ################################################  报错 ################################
+
+../../../../../core/owt_base/MsdkFrameDecoder.cpp: In member function ‘void owt_base::MsdkFrameDecoder::updateBitstream(const owt_base::Frame&)’:
+../../../../../core/owt_base/MsdkFrameDecoder.cpp:458:38: error: invalid conversion from ‘void*’ to ‘uint8_t* {aka unsigned char*}’ [-fpermissive]
+         uint8_t* tmpDataBuf = realloc(m_bitstream->Data, newSize);
+                               ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+修改
++        uint8_t* tmpDataBuf = (uint8_t*)realloc(m_bitstream->Data, newSize);
+                               
+// ################################################ ################################
+
+
+
+13. 编译 open-webrtc-toolkit/owt-client-javascript
+    cd ~/code/open-webrtc-toolkit/owt-client-javascript 
+    npm install -g grunt-cli 
+    cd scripts && npm install && grunt 
+    
+    cd ~/code/open-webrtc-toolkit/owt-server
+    scripts/pack.js -t all --install-module --app-path ~/code/open-webrtc-toolkit/owt-client-javascript/dist/samples/conference
+    
+// ####################### 执行后报错 ###################################################
+    
+    /home/webrtc/code/open-webrtc-toolkit/owt-server/source/agent/addons/mediaFrameMulticaster/build/Release/mediaFrameMulticaster.node -> /home/webrtc/code/open-webrtc-toolkit/owt-server/dist/recording_agent/mediaFrameMulticaster/build/Release
+    Warning: /home/webrtc/code/open-webrtc-toolkit/owt-server/source/agent/addons/quicIO/build/Release/quicIO.node not exist
+    ERROR: library dependency not found for
+      /home/webrtc/code/open-webrtc-toolkit/owt-server/dist/video_agent/videoTranscoder_msdk/build/Release/videoTranscoder-msdk.node:
+            libboost_thread.so.1.65.0 => not found
+            libopenh264.so.4 => not found
+            libmfx.so.1 => not found
+            libavutil.so.56 => not found
+            libavcodec.so.58 => not found
+            libavformat.so.58 => not found
+            libavfilter.so.7 => not found
+    Something failed to build. Try nvm use v8.15.0 and rerun build.js.
+    '/lib/x86_64-linux-gnu/libboost_thread.so.1.71.0' -> '/home/webrtc/code/open-webrtc-toolkit/owt-server/dist/sip_agent/lib/libboost_thread.so.1.71.0'
+    '/home/webrtc/code/open-webrtc-toolkit/owt-server/build/libdeps/build/lib/libboost_system.so.1.65.0' -> '/home/webrtc/code/open-webrtc-toolkit/owt-server/dist/audio_agent/l    
+    
+//######################################################################
+    
+    添加库## 
+    export LD_LIBRARY_PATH=/opt/intel/mediasdk/lib:$LD_LIBRARY_PATH    ## 失败
+    echo '/opt/intel/mediasdk/lib' | sudo tee /etc/ld.so.conf.d/media.conf  && sudo ldconfig  ## 成功
+    scripts/pack.js -t all --install-module --app-path ~/code/open-webrtc-toolkit/owt-client-javascript/dist/samples/conference ;
+    
+    
+    #启动 
+    cd dist && ./bin/init-all.sh --deps
+    ./bin/start-all.sh
+    
