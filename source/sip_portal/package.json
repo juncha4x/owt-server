@@ -7,7 +7,7 @@
     "toml": "*",
     "mongoose": "^6.7.3",
     "fraction.js": "*",
-    "@grpc/proto-loader": "^0.5.0",
+    "@grpc/proto-loader": "^0.7.0",
     "@grpc/grpc-js": "^1.1.0"
   }
 }
