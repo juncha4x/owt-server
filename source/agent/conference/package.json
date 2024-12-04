@@ -6,7 +6,7 @@
     "log4js": "^6.4.0",
     "node-getopt": "*",
     "toml": "*",
-    "mongoose": "^6.7.3",
+    "mongoose": "^8.8.3",
     "uuid": "^8.0.0",
     "fraction.js": "^4.0.12",
     "@grpc/proto-loader": "^0.5.0",
